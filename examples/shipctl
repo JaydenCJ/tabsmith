@@ -1,0 +1,107 @@
+#!/bin/sh
+# shipctl — a deliberately completion-less demo CLI for tabsmith.
+# It fakes a small deployment tool: a root command with global flags and
+# three subcommands, one of which nests one level deeper. Every level
+# answers --help, which is all tabsmith needs.
+
+case "$1" in
+--help|-h|help)
+    cat <<'EOF'
+shipctl — toy deployment CLI (demo fixture for tabsmith)
+
+Usage: shipctl [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -c, --config FILE     configuration file to load
+      --color[=WHEN]    colorize output; WHEN is 'always', 'never', or 'auto'
+  -v, --verbose         print progress details
+      --help            show this help and exit
+
+Commands:
+  deploy   roll a release out to an environment
+  logs     tail service logs
+  status   show fleet status
+EOF
+    exit 0
+    ;;
+deploy)
+    case "$2" in
+    --help|-h)
+        cat <<'EOF'
+Usage: shipctl deploy [OPTIONS] SERVICE
+
+Roll a release out to an environment.
+
+Options:
+  -e, --env <env>        target environment [possible values: staging, prod]
+      --strategy KIND    rollout strategy, one of: rolling, canary, bluegreen
+  -f, --manifest FILE    deployment manifest to apply
+      --dry-run          plan only, change nothing
+
+Commands:
+  history  list past deployments
+EOF
+        exit 0
+        ;;
+    history)
+        case "$3" in
+        --help|-h)
+            cat <<'EOF'
+Usage: shipctl deploy history [OPTIONS]
+
+List past deployments.
+
+Options:
+  -n, --limit N     show at most N entries
+      --json        emit machine-readable output
+EOF
+            exit 0
+            ;;
+        esac
+        echo "1  v1.4.2  prod  ok"
+        exit 0
+        ;;
+    esac
+    echo "deployed ${3:-nothing}"
+    exit 0
+    ;;
+logs)
+    case "$2" in
+    --help|-h)
+        cat <<'EOF'
+Usage: shipctl logs [OPTIONS] SERVICE
+
+Tail service logs.
+
+Options:
+  -f, --follow          keep streaming new lines
+      --since DURATION  only lines newer than this (e.g. 10m)
+EOF
+        exit 0
+        ;;
+    esac
+    echo "no logs today"
+    exit 0
+    ;;
+status)
+    case "$2" in
+    --help|-h)
+        cat <<'EOF'
+Usage: shipctl status [OPTIONS]
+
+Show fleet status.
+
+Options:
+  -o, --output FORMAT  output format, one of: table, json, wide
+EOF
+        exit 0
+        ;;
+    esac
+    echo "all green"
+    exit 0
+    ;;
+*)
+    echo "shipctl: unknown command '$1' (try --help)" >&2
+    exit 2
+    ;;
+esac
